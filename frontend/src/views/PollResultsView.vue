@@ -108,7 +108,7 @@
           </div>
 
           <!-- Total Votes & Winner Banner -->
-          <div class="py-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div class="py-6 grid grid-cols-1 gap-4">
             <div class="bg-gray-50/80 p-5 rounded-2xl border border-gray-200/60 flex items-center space-x-4">
               <div class="w-12 h-12 rounded-xl bg-black text-white flex items-center justify-center font-bold text-lg shadow-sm">
                 📊
@@ -116,18 +116,6 @@
               <div>
                 <div class="text-xs font-bold text-gray-500">Total Votes</div>
                 <div class="text-2xl font-extrabold text-black">{{ totalVotes }}</div>
-              </div>
-            </div>
-
-            <div class="bg-amber-50/80 p-5 rounded-2xl border border-amber-200/60 flex items-center space-x-4">
-              <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-400 to-amber-500 text-black flex items-center justify-center font-bold text-lg shadow-sm">
-                👑
-              </div>
-              <div class="overflow-hidden">
-                <div class="text-xs font-bold text-amber-800">Leading Option</div>
-                <div class="text-lg font-extrabold text-black truncate">
-                  {{ leadingOption ? leadingOption.text : 'No votes yet' }}
-                </div>
               </div>
             </div>
           </div>
@@ -159,11 +147,11 @@
                   </span>
 
                   <!-- Option Text -->
-                  <span class="font-bold text-black text-base sm:text-lg truncate">
+                  <span class="font-bold text-black text-base sm:text-lg break-words whitespace-normal">
                     {{ option.text }}
                   </span>
 
-                  <span v-if="totalVotes > 0 && option.votes > 0 && option.votes === leadingOption?.votes" class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-extrabold bg-amber-400 text-black shadow-sm">
+                  <span v-if="totalVotes > 0 && option.votes > 0 && option.votes === leadingOption?.votes" class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-extrabold bg-amber-400 text-black shadow-sm flex-shrink-0 whitespace-nowrap">
                     ★ Leading
                   </span>
                 </div>
