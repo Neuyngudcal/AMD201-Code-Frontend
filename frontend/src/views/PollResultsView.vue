@@ -96,7 +96,7 @@
                 <span :class="isAutoRefresh ? 'bg-green-500' : 'bg-gray-400'" class="relative inline-flex rounded-full h-2.5 w-2.5"></span>
               </span>
               <span class="text-xs font-semibold text-gray-600">
-                {{ isAutoRefresh ? 'Live (WebSocket)' : 'Paused' }}
+                {{ isAutoRefresh ? 'Live' : 'Paused' }}
               </span>
               <button 
                 @click="toggleAutoRefresh" 
@@ -136,35 +136,34 @@
           <div class="space-y-4 pt-4">
             <div class="flex items-center justify-between text-xs font-bold text-gray-500 px-1">
               <span>Options</span>
-              <span>Votes & Percentage</span>
             </div>
 
             <div 
-              v-for="(option, index) in processedOptions" 
+              v-for="(option, index) in pollData.options" 
               :key="index"
               class="relative bg-gray-50 rounded-2xl p-5 border transition-all duration-300 overflow-hidden group"
-              :class="option.isWinner && totalVotes > 0 ? 'border-amber-400 shadow-md bg-amber-50/30' : 'border-gray-200 hover:border-gray-300'"
+              :class="(totalVotes > 0 && option.votes > 0 && option.votes === leadingOption?.votes) ? 'border-amber-400 shadow-md bg-amber-50/30' : 'border-gray-200 hover:border-gray-300'"
             >
-              <!-- Background Progress Bar -->
-              <div 
-                class="absolute top-0 left-0 bottom-0 transition-all duration-700 ease-out rounded-2xl"
-                :class="option.isWinner && totalVotes > 0 ? 'bg-gradient-to-r from-amber-200/60 to-amber-300/40' : 'bg-gray-200/60'"
-                :style="{ width: `${option.percentage}%` }"
-              ></div>
+
 
               <!-- Option Content -->
               <div class="relative z-10 flex items-center justify-between gap-4">
                 <div class="flex items-center space-x-3.5 min-w-0">
+
+                  <!-- Option Number -->
                   <span 
                     class="w-8 h-8 rounded-lg flex items-center justify-center font-mono text-xs font-bold flex-shrink-0 shadow-sm"
-                    :class="option.isWinner && totalVotes > 0 ? 'bg-amber-400 text-black' : 'bg-black text-white'"
+                    :class="(totalVotes > 0 && option.votes > 0 && option.votes === leadingOption?.votes) ? 'bg-amber-400 text-black' : 'bg-black text-white'"
                   >
                     {{ index + 1 }}
                   </span>
+
+                  <!-- Option Text -->
                   <span class="font-bold text-black text-base sm:text-lg truncate">
                     {{ option.text }}
                   </span>
-                  <span v-if="option.isWinner && totalVotes > 0" class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-extrabold bg-amber-400 text-black shadow-sm">
+
+                  <span v-if="totalVotes > 0 && option.votes > 0 && option.votes === leadingOption?.votes" class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-extrabold bg-amber-400 text-black shadow-sm">
                     ★ Leading
                   </span>
                 </div>
@@ -173,34 +172,8 @@
                   <span class="text-sm font-semibold text-gray-600">
                     {{ option.votes }} {{ option.votes === 1 ? 'vote' : 'votes' }}
                   </span>
-                  <span class="text-lg font-extrabold text-black font-mono w-14 text-right">
-                    {{ option.percentage }}%
-                  </span>
                 </div>
               </div>
-            </div>
-          </div>
-
-          <!-- Footer Actions & Share -->
-          <div class="mt-10 pt-8 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div class="flex items-center space-x-2 text-xs text-gray-500 font-medium">
-              <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <span>Results update in real-time as votes are submitted.</span>
-            </div>
-
-            <div class="flex items-center space-x-3 w-full sm:w-auto">
-              <button 
-                @click="copyShareLink" 
-                type="button"
-                class="w-full sm:w-auto px-8 py-3.5 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-black font-extrabold text-sm rounded-full transition-all shadow-lg hover:scale-105 flex items-center justify-center space-x-2"
-              >
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                </svg>
-                <span>Copy Share Link</span>
-              </button>
             </div>
           </div>
         </div>
@@ -215,7 +188,7 @@
         </div>
         <h3 class="text-xl font-bold text-gray-800 mb-2">No Poll Selected</h3>
         <p class="text-gray-500 max-w-sm mx-auto text-sm">
-          Please enter your Poll Code above to view live voting analytics and response percentages.
+          Please enter your Poll Code above to view live voting analytics.
         </p>
       </div>
     </div>
@@ -242,16 +215,16 @@ let hubConnection = null;
 
 const pollData = ref({ question: '', options: [] });
 
-// Tính tổng số phiếu bầu (Viết tường minh thay vì dùng hàm reduce phức tạp)
+// caculate total votes from pollData
 const totalVotes = computed(() => {
   let sum = 0;
-  for (let i = 0; i < pollData.value.options.length; i++) {
-    sum += (pollData.value.options[i].votes || 0);
+  for (const option of pollData.value.options) {
+    sum += option.votes || 0;
   }
   return sum;
 });
 
-// Tìm ra câu trả lời có nhiều phiếu nhất (Viết tường minh thay vì dùng hàm sort)
+// Determine the leading option based on the highest votes
 const leadingOption = computed(() => {
   if (pollData.value.options.length === 0 || totalVotes.value === 0) {
     return null;
@@ -266,27 +239,9 @@ const leadingOption = computed(() => {
   return winner;
 });
 
-const processedOptions = computed(() => {
-  const total = totalVotes.value;
-  const maxVotes = leadingOption.value?.votes || 0;
-  
-  const results = [];
-  for (let i = 0; i < pollData.value.options.length; i++) {
-    const opt = pollData.value.options[i];
-    const votes = opt.votes || 0;
-    results.push({
-      id: opt.id,
-      text: opt.text,
-      votes: votes,
-      percentage: total > 0 ? Math.round((votes / total) * 100) : 0,
-      isWinner: total > 0 && votes === maxVotes && votes > 0
-    });
-  }
-  return results;
-});
-
+// Fetch poll results when the component is mounted
 onMounted(() => {
-  const code = route.params.code || route.query.code;
+  const code = route.params.code;
   if (code) {
     inputPollCode.value = code;
     fetchResults();
@@ -294,6 +249,7 @@ onMounted(() => {
 });
 
 onUnmounted(() => stopSignalR());
+
 
 const fetchResults = async () => {
   const code = inputPollCode.value.trim().replace(/^#/, '');
@@ -318,10 +274,13 @@ const fetchResults = async () => {
 
 const loadResultsData = async (code) => {
   let data = await getPollResults(code);
-  
-  if (!data?.question && !data?.options && !data?.results) {
-    data = await viewPollByCode(code);
-    if (!data?.question) throw new Error('Poll not found');
+  let question = data?.question;
+
+  if (!data || !question) {
+    const pollDetails = await viewPollByCode(code);
+    if (!pollDetails || !pollDetails.question) throw new Error('Poll not found');
+    question = pollDetails.question;
+    if (!data) data = pollDetails;
   }
 
   const rawOpts = data.options || data.results || [];
@@ -329,17 +288,17 @@ const loadResultsData = async (code) => {
   for (let i = 0; i < rawOpts.length; i++) {
     const opt = rawOpts[i];
     mappedOptions.push({
-      id: opt.id !== undefined && opt.id !== null ? opt.id : i,
+      id: opt.optionId || opt.id || i,
       text: opt.text !== undefined && opt.text !== null ? opt.text : opt,
       votes: parseInt(opt.votes !== undefined && opt.votes !== null ? opt.votes : 0, 10)
     });
   }
   
   pollData.value = {
-    question: data.question || `Poll #${code}`,
+    question: question,
     options: mappedOptions
   };
-};
+};  
 
 const silentRefresh = async () => {
   if (!isLoaded.value || !currentPollCode.value || isRefreshing.value) return;

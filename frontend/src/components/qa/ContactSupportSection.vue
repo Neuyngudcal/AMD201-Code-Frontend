@@ -1,7 +1,6 @@
 <template>
   <!-- Call To Action - CTA-->
   <div class="mt-16 bg-gradient-to-br from-gray-900 to-black rounded-[2rem] p-10 text-center text-white border border-gray-800 shadow-2xl relative overflow-hidden">
-    <!-- Hiệu ứng màu nền ánh sáng -->
     <div class="absolute -bottom-20 -right-20 w-60 h-60 bg-amber-500/20 rounded-full blur-[80px] pointer-events-none"></div>
     
     <h3 class="text-2xl sm:text-3xl font-extrabold font-anton mb-3">Still have questions?</h3>

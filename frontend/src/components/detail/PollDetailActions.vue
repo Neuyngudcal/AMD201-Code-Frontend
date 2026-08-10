@@ -1,7 +1,6 @@
 <template>
   <div class="p-8 sm:p-12 border-t border-gray-100 flex flex-col sm:flex-row gap-4 justify-between items-center bg-white">
     <div class="flex w-full sm:w-auto gap-4 flex-1">
-      <!-- Dùng <router-link> để chuyển hướng mà không cần tải lại trang -->
       <router-link 
         v-if="!poll.isClosed"
         :to="`/poll/${poll.code}`" 
@@ -28,7 +27,6 @@
 </template>
 
 <script setup>
-// Component này chỉ hiển thị các nút điều hướng (bỏ phiếu, xem kết quả).
 defineProps({
   poll: {
     type: Object,

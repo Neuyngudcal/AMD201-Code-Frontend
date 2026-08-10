@@ -1,9 +1,6 @@
 <template>
   <div class="flex items-center space-x-3 w-full md:w-auto">
-    <!-- 
-      Nút Đóng Bình chọn (Close Poll). 
-      Khi người dùng click (@click), Component này sẽ kích hoạt sự kiện 'close' để gửi lên Component cha.
-    -->
+    <!-- close poll button -->
     <button 
       @click="$emit('close')" 
       type="button"
@@ -17,7 +14,7 @@
       <span>{{ isClosing ? 'Closing...' : 'Close Poll' }}</span>
     </button>
 
-    <!-- Nút Xóa Bình chọn (Delete Poll) -->
+    <!-- delete poll button -->
     <button 
       @click="$emit('delete')" 
       type="button"
@@ -34,12 +31,10 @@
 </template>
 
 <script setup>
-// Khai báo dữ liệu nhận từ Component cha (EditPollView)
 defineProps({
   isClosing: Boolean,
   isDeleting: Boolean
 })
 
-// Khai báo các hành động gửi lên cha (EditPollView) khi bấm nút
 defineEmits(['close', 'delete'])
 </script>

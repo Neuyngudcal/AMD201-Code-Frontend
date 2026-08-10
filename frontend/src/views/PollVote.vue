@@ -8,6 +8,7 @@
         </span>
       </button>
 
+      <!-- Admin Panel Button (Visible only to the poll creator) -->
       <nav v-if="isLoaded" class="flex items-center space-x-3">
         <button 
           v-if="isCreator"
@@ -22,13 +23,9 @@
     <!-- Subtle Background Glows -->
     <div class="absolute top-0 right-0 w-[30rem] h-[30rem] bg-amber-500/10 rounded-full blur-[140px] pointer-events-none"></div>
     <div class="absolute bottom-0 left-0 w-[30rem] h-[30rem] bg-blue-500/10 rounded-full blur-[140px] pointer-events-none"></div>
-
     <div class="max-w-3xl mx-auto relative z-10">
 
-      <!-- 
-        Component chứa Tiêu đề Bình chọn.
-        Dùng v-bind (dấu :) để truyền các giá trị từ Component cha xuống Component con.
-      -->
+      <!-- Hero Section with Poll Details -->
       <PollVoteHero 
         :pollCode="pollCode"
         :question="pollData.question"
@@ -47,16 +44,14 @@
       <div v-else-if="isLoaded" class="bg-white rounded-[2rem] shadow-xl border border-gray-200/80 overflow-hidden transition-all duration-300 animate-fade-in">
         <div class="h-2 w-full bg-gradient-to-r from-amber-400 to-amber-500"></div>
 
+        <!-- Voting Form -->
         <form @submit.prevent="handleVote" class="p-6 sm:p-10 space-y-8">
           <div class="space-y-4">
             <label class="block text-sm font-bold text-gray-700">
               Choose an option to cast your vote:
             </label>
 
-            <!-- 
-              Component chứa Danh sách Đáp án để chọn (Radio buttons).
-              Dùng v-model="selectedOptionIndex" để đồng bộ lựa chọn của người dùng từ Component con lên biến selectedOptionIndex của cha.
-            -->
+            <!-- v-model for two-way binding -->
             <PollVoteOptions 
               :options="pollData.options"
               v-model="selectedOptionIndex"
@@ -87,19 +82,13 @@
                 View Results
               </button>
 
+            <!-- disable the submit button if isSubmitting is true or no option is selected -->
               <button 
                 type="submit" 
                 :disabled="isSubmitting || selectedOptionIndex === null"
                 class="w-full sm:w-auto px-10 py-4 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-black font-extrabold text-base rounded-full transition-all duration-200 shadow-xl hover:shadow-amber-400/20 hover:scale-105 disabled:opacity-40 disabled:pointer-events-none flex items-center justify-center space-x-2"
               >
-                <svg v-if="isSubmitting" class="animate-spin -ml-1 mr-2 h-5 w-5 text-black" fill="none" viewBox="0 0 24 24">
-                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                <span>{{ isSubmitting ? 'Submitting Vote...' : 'Submit Vote' }}</span>
-                <svg v-if="!isSubmitting" class="w-5 h-5 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                </svg>
+                Submit Vote
               </button>
             </div>
           </div>
@@ -143,37 +132,39 @@ const pollCode = ref('');
 const isLoading = ref(true);
 const isLoaded = ref(false);
 const isSubmitting = ref(false);
+
 const selectedOptionIndex = ref(null);
 const isCreator = ref(false);
-
 const pollData = ref({ question: '', options: [] });
 
 onMounted(() => {
   const code = route.params.code;
   if (code) {
     pollCode.value = code;
+    // Check if the user is the creator of the poll by looking for a token in localStorage
     isCreator.value = !!localStorage.getItem(`poll_token_${code}`);
     fetchPollDetails();
-  } else isLoading.value = false;
+  } else {
+    isLoading.value = false;
+  }
 });
 
 const fetchPollDetails = async () => {
   isLoading.value = true;
   try {
     const data = await viewPollByCode(pollCode.value);
+    
+    // Validate if the poll data contains a question; if not, show an error toast
     if (!data?.question) return toast.error('Poll not found.');
 
     pollData.value.question = data.question;
-    const mappedOptions = [];
-    const apiOptions = data.options || [];
-    for (let i = 0; i < apiOptions.length; i++) {
-      const opt = apiOptions[i];
-      mappedOptions.push({
-        id: opt.id !== undefined && opt.id !== null ? opt.id : i,
-        text: opt.text !== undefined && opt.text !== null ? opt.text : opt
-      });
-    }
-    pollData.value.options = mappedOptions;
+
+    // if api returns options as an array of strings, convert them to objects with id and text
+    // if api returns options as an array of objects, ensure each object has id and text
+    pollData.value.options = (data.options || []).map((opt, index) => ({
+      id: opt.id ?? index,
+      text: opt.text ?? opt
+    }));
 
     isLoaded.value = true;
   } catch (error) {
@@ -184,26 +175,33 @@ const fetchPollDetails = async () => {
 };
 
 const handleVote = async () => {
+  // validate selectedOptionIndex is not null before proceeding
   if (selectedOptionIndex.value === null) return toast.error('Please select an option before voting!');
 
+  // get the selected option based on the index
   const selectedOpt = pollData.value.options[selectedOptionIndex.value];
   if (!selectedOpt) return;
 
   isSubmitting.value = true;
   try {
+    // call API to submit the vote
     const res = await votePoll(pollCode.value, selectedOpt.id);
     if (res) {
       toast.success('Your vote has been submitted successfully!');
       router.push(`/results/${pollCode.value}`);
-    } else toast.error('Failed to submit vote. Please try again.');
+    } else {
+      toast.error('Failed to submit vote. Please try again.');
+    }
   } catch (error) {
     toast.error('Connection error while voting.');
   } finally {
+    // put isSubmitting.value = false in finally block to ensure it resets regardless of success or failure
     isSubmitting.value = false;
   }
 };
 
 const copyShareLink = () => {
+  // Copy the poll link to the clipboard using the Clipboard API
   navigator.clipboard.writeText(`${window.location.origin}/poll/${pollCode.value}`)
     .then(() => toast.success('Poll link copied to clipboard!'))
     .catch(() => toast.error('Failed to copy link.'));

@@ -171,8 +171,8 @@ const handleCreatePoll = async () => {
   toast.dismiss();
 
   const questionText = pollForm.value.question.trim();
-  // Lọc ra các câu trả lời hợp lệ (bỏ qua khoảng trắng và ô trống)
-  // Viết tường minh thay vì dùng hàm filter(Boolean) khó hiểu
+  // filter out empty options and trim whitespace from each option
+  // Write explicitly instead of using filter(Boolean) for better readability
   const validOptions = [];
   for (let i = 0; i < pollForm.value.options.length; i++) {
     const opt = pollForm.value.options[i].trim();

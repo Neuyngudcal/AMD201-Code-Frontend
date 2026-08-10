@@ -6,7 +6,7 @@
       <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
         <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-xs font-semibold text-amber-300">
           <span class="w-2 h-2 rounded-full bg-green-400 animate-pulse inline-block"></span>
-          <span>Voting Open • Code: #{{ pollCode }}</span>
+          <span>Code: {{ pollCode }}</span>
         </div>
 
         <div v-if="isCreator" class="inline-flex items-center px-2.5 py-1 rounded-full bg-amber-400 text-black text-xs font-extrabold shadow">
@@ -28,7 +28,8 @@
 </template>
 
 <script setup>
-// Component này chỉ để hiển thị Câu hỏi bình chọn (Question)
+// This Component just displays the Poll Question and some information about the poll. 
+// It does not handle any voting logic or state management. 
 defineProps({
   pollCode: String,
   question: String,

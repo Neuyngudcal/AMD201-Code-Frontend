@@ -15,21 +15,12 @@
         </p>
       </div>
 
-      <!-- Khu vực ô nhập Poll Code để tải dữ liệu bình chọn -->
+      <!-- poll input -->
       <div class="w-full md:w-auto bg-black/40 backdrop-blur-md border border-white/10 p-4 rounded-2xl flex-shrink-0">
         <label class="block text-xs font-bold text-gray-400 mb-2">
           Enter Poll Code to Edit
         </label>
-        <!-- 
-          @submit.prevent="$emit('submit')": 
-          Khi form được submit, ngăn chặn việc tải lại trang (.prevent) 
-          và phát ra (emit) một sự kiện tên là 'submit' để báo cho Component cha biết.
-        -->
         <form @submit.prevent="$emit('submit')" class="flex gap-2">
-          <!-- 
-            Sử dụng :value và @input để mô phỏng v-model.
-            Khi người dùng gõ phím, nó sẽ phát ra sự kiện update:modelValue để cập nhật giá trị ở Component cha.
-          -->
           <input 
             :value="modelValue"
             @input="$emit('update:modelValue', $event.target.value)"
@@ -55,18 +46,18 @@
 </template>
 
 <script setup>
-// defineProps: Khai báo những dữ liệu mà Component con này được quyền nhận từ Component cha.
+// defineProps: prop types for the component, allowing it to receive data from its parent component.
 defineProps({
-  modelValue: { // Giá trị của mã Poll Code truyền vào thông qua v-model
+  modelValue: {
     type: String,
     required: true
   },
-  isLoading: { // Trạng thái đang tải (hiện icon xoay xoay)
+  isLoading: {
     type: Boolean,
     default: false
   }
 })
 
-// defineEmits: Khai báo những sự kiện (events) mà Component con này có thể gửi lên cho Component cha.
+// defineEmits: events that the component can emit to its parent, allowing for communication and data flow back to the parent component.
 defineEmits(['update:modelValue', 'submit'])
 </script>

@@ -17,11 +17,7 @@
 
     <div class="max-w-3xl mx-auto relative z-10">
 
-      <!-- 
-        Component Banner & Nhập mã.
-        v-model="inputPollCode": Truyền biến inputPollCode xuống component con, nếu con đổi thì biến này cũng đổi.
-        @submit="fetchPollData": Lắng nghe sự kiện 'submit' từ component con để chạy hàm fetchPollData.
-      -->
+      <!-- Hero Section: Edit Poll Header and Input -->
       <EditPollHero 
         v-model="inputPollCode" 
         :isLoading="isLoading"
@@ -71,10 +67,6 @@
 
             <!-- Options List -->
             <div class="space-y-3">
-              <!-- 
-                v-for lặp qua mảng options. 
-                Lưu ý: Mảng options là một mảng các chuỗi (string) đơn giản. 
-              -->
               <div 
                 v-for="(option, index) in pollForm.options" 
                 :key="index"
@@ -87,7 +79,6 @@
 
                 <!-- Option Input -->
                 <div class="relative flex-1">
-                  <!-- v-model ở đây giúp ràng buộc thẳng vào phần tử thứ [index] của mảng -->
                   <input 
                     v-model="pollForm.options[index]" 
                     type="text"
@@ -96,9 +87,7 @@
                     @input="toast.dismiss()"
                   />
                 </div>
-
-                <!-- Nút xóa (Remove) -->
-                <!-- Gọi hàm removeOption(index) để xóa phần tử tại vị trí thứ index -->
+                <!-- Remove Option Button -->
                 <button 
                   @click="removeOption(index)" 
                   type="button"
@@ -113,8 +102,7 @@
               </div>
             </div>
 
-            <!-- Nút thêm (Add Option) -->
-            <!-- Dùng v-if để ẩn nút này nếu đã đủ 6 câu trả lời -->
+            <!-- Add Option Button < 6-->
             <div class="pt-2">
               <button 
                 v-if="pollForm.options.length < 6"
@@ -135,11 +123,6 @@
 
           <!-- Danger Zone & Actions -->
           <div class="pt-8 border-t border-gray-100 flex flex-col md:flex-row items-center justify-between gap-6">
-            
-            <!-- 
-              Component Khu vực Nút Danger (Close & Delete). 
-              Lắng nghe sự kiện @close và @delete từ Component con.
-            -->
             <EditPollDangerZone 
               :isClosing="isClosing"
               :isDeleting="isDeleting"
@@ -201,8 +184,9 @@ const isDeleting = ref(false);
 
 const pollForm = ref({ question: '', options: ['', ''] });
 
+// Fetch poll data when the component is mounted or when a poll code is provided in the route parameters.
 onMounted(() => {
-  const code = route.params.code || route.query.code;
+  const code = route.params.code
   if (code) {
     inputPollCode.value = code;
     fetchPollData();
@@ -211,7 +195,8 @@ onMounted(() => {
 
 const fetchPollData = async () => {
   const code = inputPollCode.value.trim().replace(/^#/, '');
-  if (!code) return toast.error('Please enter a Poll Code!');
+  if (!code) 
+  return toast.error('Please enter a Poll Code!');
 
   isLoading.value = true;
   isLoaded.value = false;
@@ -219,13 +204,12 @@ const fetchPollData = async () => {
 
   try {
     const data = await viewPollByCode(code);
-    if (!data?.question) return toast.error('No poll found with this code!');
+    if (!data?.question) 
+    return toast.error('No poll found with this code!');
 
     currentPollCode.value = code;
     pollForm.value.question = data.question;
     
-    // Code cũ: dùng các hàm nâng cao (map, spread, slice) hơi khó hiểu
-    // Code mới: Viết tường minh bằng vòng lặp for dễ hiểu cho người mới học
     const apiOptions = data.options || [];
     const mappedOptions = [];
     
@@ -239,11 +223,11 @@ const fetchPollData = async () => {
       }
     }
 
-    // 2. Đảm bảo UI luôn hiển thị ít nhất 2 ô nhập liệu
+    // always ensure at least 2 options are present
     if (mappedOptions.length === 0) {
-      mappedOptions.push('', ''); // Thêm 2 ô trống
+      mappedOptions.push('', ''); 
     } else if (mappedOptions.length === 1) {
-      mappedOptions.push('');     // Thêm 1 ô trống nữa
+      mappedOptions.push('');
     }
 
     pollForm.value.options = mappedOptions;
@@ -263,6 +247,7 @@ const addOption = () => {
   }
 };
 
+// Remove an option from the poll form, ensuring that at least 2 options remain.
 const removeOption = (index) => {
   if (pollForm.value.options.length > 2) {
     pollForm.value.options.splice(index, 1);
@@ -278,7 +263,8 @@ const handleUpdatePoll = async () => {
     options.push(pollForm.value.options[i].trim());
   }
 
-  if (!question) return toast.error('Please enter a question for your poll!');
+  if (!question) 
+  return toast.error('Please enter a question for your poll!');
   
   // Kiểm tra xem có option nào bị trống không
   let hasEmptyOption = false;
@@ -288,10 +274,12 @@ const handleUpdatePoll = async () => {
       break;
     }
   }
-  if (hasEmptyOption) return toast.error('Options cannot be empty!');
+  if (hasEmptyOption) 
+  return toast.error('Options cannot be empty!');
 
   const creatorToken = localStorage.getItem(`poll_token_${currentPollCode.value}`);
-  if (!creatorToken) return toast.error('You do not have permission to edit this poll.');
+  if (!creatorToken) 
+  return toast.error('You do not have permission to edit this poll.');
 
   isSubmitting.value = true;
   try {
@@ -308,10 +296,12 @@ const handleUpdatePoll = async () => {
 };
 
 const handleClosePoll = async () => {
-  if (!confirm('Are you sure you want to close this poll? Users will no longer be able to vote.')) return;
+  if (!confirm('Are you sure you want to close this poll? Users will no longer be able to vote.')) 
+  return;
   
   const creatorToken = localStorage.getItem(`poll_token_${currentPollCode.value}`);
-  if (!creatorToken) return toast.error('You do not have permission to close this poll.');
+  if (!creatorToken) 
+  return toast.error('You do not have permission to close this poll.');
   
   isClosing.value = true;
   try {
@@ -326,10 +316,12 @@ const handleClosePoll = async () => {
 };
 
 const handleDeletePoll = async () => {
-  if (!confirm('WARNING: Are you sure you want to permanently delete this poll? This action cannot be undone!')) return;
+  if (!confirm('WARNING: Are you sure you want to permanently delete this poll? This action cannot be undone!')) 
+  return;
   
   const creatorToken = localStorage.getItem(`poll_token_${currentPollCode.value}`);
-  if (!creatorToken) return toast.error('You do not have permission to delete this poll.');
+  if (!creatorToken) 
+  return toast.error('You do not have permission to delete this poll.');
   
   isDeleting.value = true;
   try {

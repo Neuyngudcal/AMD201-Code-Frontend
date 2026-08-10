@@ -74,11 +74,10 @@
           Enter any code (e.g. <span class="font-mono text-amber-300 bg-black/40 px-1.5 py-0.5 rounded">#pPNXiZQ</span>) to vote, check live results, or edit.
         </p>
 
-        <!-- Form nhập code -->
-        <!-- @submit.prevent: Ngăn chặn hành vi mặc định của form (load lại trang) khi nhấn Submit -->
+        <!-- Input Form code -->
         <form @submit.prevent="handleQuickJump" class="space-y-4">
           <div class="relative">
-            <!-- v-model: Liên kết dữ liệu hai chiều (two-way binding) với biến quickCode -->
+            <!-- Input field for poll code -->
             <input 
               v-model="quickCode" 
               type="text" 
@@ -89,8 +88,6 @@
 
           <!-- Action Selector Buttons -->
           <div class="grid grid-cols-3 gap-2 bg-black/30 p-1.5 rounded-2xl border border-white/10 text-xs font-semibold">
-            <!-- @click: Xử lý sự kiện click để gán giá trị cho biến quickAction -->
-            <!-- :class: Ràng buộc class động (dynamic class binding) dựa trên giá trị của quickAction -->
             <button 
               type="button" 
               @click="quickAction = 'vote'" 
@@ -117,7 +114,7 @@
             </button>
           </div>
 
-          <!-- :disabled: Khóa nút submit nếu quickCode bị trống -->
+          <!-- :disabled: dissable the button if quickCode is empty -->
           <button 
             type="submit" 
             :disabled="!quickCode.trim()" 
@@ -133,27 +130,22 @@
 </template>
 
 <script setup>
-// import { ref } để tạo các biến phản ứng (reactive variables) trong Vue 3
 import { ref } from 'vue';
-// import { useRouter } để sử dụng cho việc chuyển trang (navigation)
 import { useRouter } from 'vue-router';
 
-// Khởi tạo router để có thể chuyển hướng người dùng bằng code
 const router = useRouter();
 
-// Tạo các biến phản ứng (reactive state)
-// quickCode lưu trữ giá trị người dùng nhập vào ô mã Code
+// quickCode storage the poll code entered by the user
 const quickCode = ref('');
-// quickAction lưu trữ hành động mà người dùng muốn thực hiện (vote, results, edit)
+// quickAction stores the action the user wants to perform (vote, results, edit)
 const quickAction = ref('vote'); 
 
-// Hàm xử lý sự kiện khi form được submit
+// function to handle the quick jump action based on the user's input and selected action
 const handleQuickJump = () => {
-  // Loại bỏ khoảng trắng và dấu '#' ở đầu mã (nếu người dùng có gõ vào)
   const code = quickCode.value.trim().replace(/^#/, '');
   if (!code) return; // Nếu mã rỗng, không làm gì cả
   
-  // Kiểm tra lựa chọn của người dùng (quickAction) và chuyển hướng đến URL tương ứng
+  // Navigate to the appropriate route based on the selected action
   if (quickAction.value === 'vote') {
     router.push(`/poll/${code}`);
   } else if (quickAction.value === 'results') {

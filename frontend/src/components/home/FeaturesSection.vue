@@ -51,7 +51,7 @@
               Effortless One-Click Sharing
             </h3>
             <p class="text-gray-600 leading-relaxed text-sm sm:text-base">
-              Every poll generates a clean short code and URL (e.g. <code>/poll/pPNXiZQ</code>). Share it in messaging apps, social media, or live meetings. Participants vote with a single tap and see live percentage updates immediately.
+              Every poll generates a clean short code and URL (e.g. <code>/poll/QyiRNCQ</code>). Share it in messaging apps, social media, or live meetings. Participants vote with a single tap and see live percentage updates immediately.
             </p>
           </div>
         </div>
